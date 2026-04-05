@@ -24,11 +24,13 @@ import { auth } from '../firebase/config'
 
 // Importa os componentes que representam as telas da aplicação.
 // Cada componente corresponde a uma página do sistema.
-import HomeView from '../views/HomeView.vue'
+import EmCartazView from '../views/EmCartazView.vue'
+import EmBreveView from '../views/EmBreveView.vue'
 import LoginView from '../views/LoginView.vue'
-import DashboardView from '../views/DashboardView.vue'
+import CadastraFilmeView from '../views/CadastraFilmeView.vue'
 import ProfileView from '../views/ProfileView.vue'
-//import ExpenseDetailView from '../views/ExpenseDetailView.vue'
+
+
 
 
 // ---------------------------------------------------------------------------
@@ -50,11 +52,16 @@ import ProfileView from '../views/ProfileView.vue'
 // que uma rota exige que o usuário esteja logado.
 //
 const routes = [
-
-  // Página inicial da aplicação
+  //em cartaz
   {
-    path: '/',          // endereço acessado no navegador
-    component: HomeView // componente exibido
+    path: '/',
+    component: EmCartazView
+  },
+
+  //em breve
+  {
+    path: '/EmBreveView',
+    component: EmBreveView
   },
 
   // Página de login
@@ -65,29 +72,20 @@ const routes = [
 
   // Página restrita (somente para usuários autenticados)
   {
-    path: '/dashboard',
-    component: DashboardView,
+    path: '/CadastraFilme',
+    component: CadastraFilmeView,
 
     // Metadado da rota usado para controle de acesso
     // Aqui informamos que esta página exige autenticação.
     meta: { requiresAuth: true }
   },
 
-  // Opção A: tela de perfil (protegida)
+  //tela de perfil (protegida)
   {
     path: '/profile',
     component: ProfileView,
     meta: { requiresAuth: true }
   },
-/*
-  // Opção B: detalhe de despesa por id (protegida)
-  // Ex: /expense/abc123
-  {
-    path: '/expense/:id',
-    component: ExpenseDetailView,
-    meta: { requiresAuth: true }
-  }
-    */
 ]
 
 

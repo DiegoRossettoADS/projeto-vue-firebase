@@ -101,8 +101,9 @@ button.secondary {
 }
 
 .form-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr auto;
+  display: flex;
+  flex-direction: column;
+  
   gap: 10px;
   margin: 12px 0;
 }
@@ -113,7 +114,21 @@ button.secondary {
   border-radius: 6px;
 }
 
+.form-row select {
+  height: 35px;
+  border: solid 1px rgb(219, 219, 219);
+  border-radius: 4px;
+}
+
+.form-row button {
+  width: 40%;
+  align-self: center;
+  font-size: larger;
+}
+
 .error {
   color: #b00020;
   margin-top: 8px;
+  text-align: center;
+  font-size: large;
 }

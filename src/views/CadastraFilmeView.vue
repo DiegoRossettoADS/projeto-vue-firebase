@@ -1,9 +1,9 @@
 <script setup>
 /**
- * DashboardView.vue — Área Protegida com CRUD de Despesas
+ * CadastraFilmeView.vue — Área Protegida com CRUD de filmes
  *
  * Propósito: tela acessível apenas por usuários autenticados,
- * onde é possível cadastrar e visualizar despesas pessoais
+ * onde é possível cadastrar e visualizar filmes pessoais
  * armazenadas no Firebase Firestore.
  *
  * Conceitos demonstrados neste componente:
@@ -62,17 +62,21 @@ import { collection, addDoc, onSnapshot, query, where } from 'firebase/firestore
 import { auth, db } from '../firebase/config'
 
 //import do componente de detalhes dos itens salvos
-import DespesaItem from '../components/DespesaItem.vue'
+import FilmeItem from '../components/DescricaoFilme.vue'
 
 
 // ---------------------------------------------------------------------------
 // ESTADO DO COMPONENTE (variáveis reativas)
 // ---------------------------------------------------------------------------
 
-const descricao = ref('')   // Texto digitado no campo "descrição"
-const valor     = ref('')   // Número digitado no campo "valor"
-const despesas  = ref([])   // Array com os registros vindos do Firestore
-const aviso     = ref('')   // Mensagem de validação exibida ao usuário
+const titulo = ref('')   // Texto digitado no campo "descrição"
+const valor = ref('')   // Número digitado no campo "valor"
+const filmes = ref([])   // Array com os registros vindos do Firestore
+const aviso = ref('')   // Mensagem de validação exibida ao usuário
+const status = ref('cartaz') //para adicionar em cartaz ou em breve
+const imagem = ref('') 
+const genero = ref('')
+const dataEstreia = ref('')
 
 // Guarda a função de cancelamento retornada pelo onSnapshot.
 
@@ -80,55 +84,61 @@ let unsubscribe = null
 
 
 // ---------------------------------------------------------------------------
-// FUNÇÃO: salvarDespesa — operação CREATE do CRUD
+// FUNÇÃO: salvarFilme — operação CREATE do CRUD
 // ---------------------------------------------------------------------------
 //
 // Valida os campos e grava um novo documento no Firestore.
 // Cada documento inclui o userId para isolar dados por usuário.
 //
-const salvarDespesa = async () => {
+const salvarFilme = async () => {
 
   aviso.value = '' // Limpa aviso anterior antes de qualquer coisa
 
   // Validação: ambos os campos precisam estar preenchidos.
   // "return" interrompe a função se a condição for verdadeira.
-  if (!descricao.value || !valor.value) {
-    aviso.value = 'Preencha descricao e valor.'
+  if (!titulo.value || !valor.value || !status.value || !genero.value || !dataEstreia.value ) {
+    aviso.value = 'Preencha as informações.'
     return
   }
 
   // addDoc grava um novo documento na coleção "financas".
   // await pausa a função até o Firebase confirmar a gravação.
   await addDoc(collection(db, 'financas'), {
-    descricao: descricao.value,
+    titulo: titulo.value,
     valor: Number(valor.value),  // Converte string → número antes de salvar
-
+    status: status.value,
+    imagem: imagem.value,
+    genero: genero.value,
+    dataEstreia: dataEstreia.value,
     // userId vincula o registro ao usuário logado.
-    // Sem isso, todos os usuários veriam as despesas uns dos outros.
+    // Sem isso, todos os usuários veriam os cadastros uns dos outros.
     userId: auth.currentUser.uid
   })
 
   // Limpa os campos após salvar com sucesso
-  descricao.value = ''
+  titulo.value = ''
   valor.value = ''
+  imagem.value = ''
+  genero.value = ''
+  dataEstreia.value = ''
 }
 
 
 // ---------------------------------------------------------------------------
-// FUNÇÃO: ouvirDespesas — operação READ em tempo real
+// FUNÇÃO: ouvirfilmes — operação READ em tempo real
 // ---------------------------------------------------------------------------
 //
 // Cria uma escuta ativa no Firestore.
 // Sempre que um documento da consulta for criado, editado ou removido,
-// o array "despesas" é atualizado automaticamente — sem precisar recarregar.
+// o array "filmes" é atualizado automaticamente — sem precisar recarregar.
 //
-const ouvirDespesas = () => {
+const ouvirfilmes = () => {
 
   // Criamos uma consulta (query) no Firestore.
   // Ela busca documentos na coleção "financas".
   // O filtro where garante que só retornem documentos
   // cujo campo userId seja igual ao ID do usuário logado.
-  // Assim cada usuário vê apenas suas próprias despesas.
+  // Assim cada usuário vê apenas suas próprias filmes.
   const q = query(
     collection(db, 'financas'),
     where('userId', '==', auth.currentUser.uid)
@@ -151,14 +161,14 @@ const ouvirDespesas = () => {
     //
     // Usamos map() para percorrer cada documento e transformá-lo
     // em um objeto JavaScript simples que será usado na interface.
-    despesas.value = snapshot.docs.map((doc) => ({
+    filmes.value = snapshot.docs.map((doc) => ({
 
       // doc.id é o identificador único gerado pelo Firestore
       // (geralmente usado como :key em listas no Vue)
       id: doc.id,
 
       // doc.data() retorna todos os campos armazenados no documento
-      // como descricao, valor e userId.
+      // como titulo, valor e userId.
       // O operador ... espalha esses campos dentro do objeto.
       ...doc.data()
 
@@ -188,10 +198,10 @@ onMounted(() => {
   // auth.currentUser vem do Firebase Authentication.
   if (auth.currentUser) {
 
-    // Inicia a escuta em tempo real das despesas do usuário.
-    // A função ouvirDespesas usa onSnapshot do Firestore
+    // Inicia a escuta em tempo real das filmes do usuário.
+    // A função ouvirfilmes usa onSnapshot do Firestore
     // para receber atualizações automáticas do banco.
-    ouvirDespesas()
+    ouvirfilmes()
   }
 })
 
@@ -222,24 +232,34 @@ onBeforeUnmount(() => {
 <template>
   <section class="card">
 
-    <h1><i class="fa-solid fa-chart-line"></i> Dashboard</h1>
+    <h1><i class="fa-solid fa-chart-line"></i> Cadastrar Filmes</h1>
     <p class="muted">Somente usuarios logados podem acessar esta tela.</p>
 
     <!-- -----------------------------------------------------------------
-      FORMULÁRIO
-      Três elementos com v-model e @click conectados ao estado e funções.
+      FORMULÁRIO CADASTRO
     ------------------------------------------------------------------ -->
     <div class="form-row">
 
-      <!-- v-model="descricao" mantém o campo sincronizado com a ref -->
-      <input v-model="descricao" placeholder="Descricao (ex: Pizza)" />
+      <!-- v-model="titulo" mantém o campo sincronizado com a ref -->
+      <input v-model="titulo" placeholder="Título do filme" />
 
       <!-- type="number" + step="0.01" permite valores decimais -->
-      <input v-model="valor" type="number" step="0.01" placeholder="Valor" />
+      <input v-model="valor" type="number" step="0.01" placeholder="Valor do ingresso" />
 
-      <!-- @click chama salvarDespesa() a cada clique -->
-      <button @click="salvarDespesa">
-        <i class="fa-solid fa-plus"></i> Salvar
+      <input v-model="imagem" placeholder="URL da imagem (capa)" />
+
+      <input v-model="genero" placeholder="Gênero (ex: Ação, Comédia)" />
+
+      <input v-model="dataEstreia" type="date" />
+
+      <select v-model="status">
+        <option value="cartaz">Em cartaz</option>
+        <option value="breve">Em breve</option>
+      </select>
+
+      <!-- @click chama salvarFilme() a cada clique -->
+      <button @click="salvarFilme">
+        <i class="fa-solid fa-plus"></i> Cadastrar
       </button>
 
     </div>
@@ -249,36 +269,36 @@ onBeforeUnmount(() => {
       <i class="fa-solid fa-triangle-exclamation"></i> {{ aviso }}
     </p>
 
-    <h3>Minhas despesas</h3>
+    <h3>Filmes Cadastrados</h3>
 
     <!-- -----------------------------------------------------------------
-      LISTA DE DESPESAS
+      LISTA DE FILMES
       v-if / v-else alternam entre lista preenchida e mensagem vazia.
     ------------------------------------------------------------------ -->
 
     <!-- v-if: renderiza a lista somente se houver ao menos 1 item -->
-    <ul v-if="despesas.length">
+    <ul v-if="filmes.length">
 
       <!--
-        v-for percorre o array "despesas".
+        v-for percorre o array "filmes".
         :key="item.id" usa o ID do Firestore para identificar cada elemento
         de forma única — o Vue precisa disso para atualizar o DOM com eficiência.
       --> <!--
-      <li v-for="item in despesas" :key="item.id">
-        <strong>{{ item.descricao }}</strong> — R$ {{ item.valor }}
+      <li v-for="item in filmes" :key="item.id">
+        <strong>{{ item.titulo }}</strong> — R$ {{ item.valor }}
       </li> -->
 
       <!-- nova lista para receber o componente detalhe-->
-      <DespesaItem
-        v-for="item in despesas"
+      <FilmeItem
+        v-for="item in filmes"
         :key="item.id"
         :item="item"
       />
 
     </ul>
 
-    <!-- v-else: exibido quando despesas.length === 0 -->
-    <p v-else class="muted">Ainda nao ha despesas cadastradas.</p>
+    <!-- v-else: exibido quando filmes.length === 0 -->
+    <p v-else class="muted">Ainda nao ha filmes cadastrados.</p>
 
   </section>
 </template>
