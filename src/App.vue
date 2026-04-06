@@ -9,22 +9,50 @@ const userEmail = computed(() => authStore.user?.email || 'Deslogado')
 
 <template>
   <div class="layout">
-    <header class="topbar">
-      <h2><i class="fa-solid fa-fire"></i> Vue + Firebase</h2>
-      <span class="muted">Usuario: {{ userEmail }}</span>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+      <div class="nav-container">
+
+        <!-- LOGO -->
+        <div class="logo">
+          🎬 CineApp
+        </div>
+
+        <!-- LINKS -->
+        <nav class="links">
+          <router-link to="/">Em Cartaz</router-link>
+          <router-link to="/EmBreveView">Em Breve</router-link>
+          <router-link to="/CadastraFilme">Cadastrar</router-link>
+          <router-link to="/profile">Perfil</router-link>
+        </nav>
+
+        <!-- USUÁRIO + AÇÃO -->
+        <div class="user-area">
+          <span class="user">
+            👤 {{ userEmail }}
+          </span>
+
+          <button
+            v-if="authStore.user"
+            class="logout"
+            @click="authStore.logout()"
+          >
+            Sair
+          </button>
+
+          <router-link v-else to="/login" class="login-btn">
+            Login
+          </router-link>
+        </div>
+
+      </div>
     </header>
 
-    <nav class="menu">
-      <router-link to="/"><i class="fa-solid fa-house"></i> Em Cartaz</router-link>
-      <router-link to="/EmBreveView"><i class="fa-solid fa-right-to-bracket"></i> Em Breve</router-link>
-      <router-link to="/login"><i class="fa-solid fa-chart-line"></i> Login</router-link>
-      <router-link to="/CadastraFilme"><i class="fa-solid fa-id-card"></i> Cadastrar Filme</router-link>
-      <router-link to="/profile"><i class="fa-solid fa-id-card"></i> Perfil</router-link>
-      <button v-if="authStore.user" class="linklike" @click="authStore.logout()">
-        <i class="fa-solid fa-right-from-bracket"></i> Sair
-      </button>
-    </nav>
+    <!-- CONTEÚDO -->
+    <main class="content">
+      <router-view />
+    </main>
 
-    <router-view></router-view>
   </div>
 </template>

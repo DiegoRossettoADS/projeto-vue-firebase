@@ -7,7 +7,7 @@
 * {
   box-sizing: border-box;
 }
-
+/*
 body {
   margin: 0;
   padding: 24px;
@@ -131,4 +131,150 @@ button.secondary {
   margin-top: 8px;
   text-align: center;
   font-size: large;
+}*/
+
+/* LAYOUT BASE */
+.layout {
+  min-height: 100vh;
+  background: #0f0f0f;
+}
+
+/* NAVBAR */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* CONTAINER */
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* LOGO */
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #e50914;
+}
+
+/* LINKS */
+.links {
+  display: flex;
+  gap: 20px;
+}
+
+/* LINKS ESTILO */
+.links a {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 14px;
+  position: relative;
+  transition: 0.3s;
+}
+
+/* HOVER */
+.links a:hover {
+  color: #fff;
+}
+
+/* LINK ATIVO */
+.links a.router-link-active {
+  color: #fff;
+}
+
+/* LINHA ANIMADA */
+.links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background: #e50914;
+  transition: 0.3s;
+}
+
+.links a:hover::after,
+.links a.router-link-active::after {
+  width: 100%;
+}
+
+/* ÁREA DO USUÁRIO */
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* TEXTO USUÁRIO */
+.user {
+  color: #aaa;
+  font-size: 13px;
+}
+
+/* BOTÃO LOGOUT */
+.logout {
+  background: linear-gradient(135deg, #e50914, #ff2a2a);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout:hover {
+  transform: scale(1.05);
+}
+
+/* BOTÃO LOGIN */
+.login-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  color: #ccc;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+  background: #222;
+  color: #fff;
+}
+
+/* CONTEÚDO */
+.content {
+  padding-top: 10px;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+  .links {
+    gap: 12px;
+  }
+
+  .logo {
+    font-size: 16px;
+  }
+
+  .links a {
+    font-size: 13px;
+  }
+
+  .user {
+    display: none;
+  }
 }

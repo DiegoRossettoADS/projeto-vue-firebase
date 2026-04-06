@@ -62,7 +62,7 @@ const entrar = async () => {
 
     // Chegou aqui sem exceção = login OK.
     // router.push() navega para a rota sem recarregar a página.
-    router.push('/dashboard')
+    router.push('/EmBreveView')
   } catch (e) {
     // O Firebase lança um erro para credenciais inválidas, usuário inexistente etc.
     // Optamos por uma mensagem genérica para não expor detalhes ao usuário.
@@ -87,7 +87,7 @@ const registrar = async () => {
     await createUserWithEmailAndPassword(auth, email.value, senha.value)
 
     // Conta criada e usuário já autenticado — redireciona direto.
-    router.push('/dashboard')
+    router.push('/EmBreveView')
   } catch (e) {
     console.error(e)
     erro.value = e.message
@@ -99,7 +99,7 @@ const registrar = async () => {
 <template>
   <section class="card">
     <h1><i class="fa-solid fa-right-to-bracket"></i> Login</h1>
-    <p class="muted">Use email e senha para testar o Firebase Auth.</p>
+    <p class="muted">Faça login ou registre-se usando email e senha.</p>
 
    
     <label class="field">
@@ -132,3 +132,117 @@ const registrar = async () => {
     </p>
   </section>
 </template>
+<style scoped>
+/* FUNDO GERAL */
+section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
+}
+
+/* CARD LOGIN (GLASS) */
+.card {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  border-radius: 16px;
+  margin: 0 auto;
+
+  /* efeito vidro */
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* TÍTULO */
+.card h1 {
+  color: #fff;
+  margin: 0;
+  font-size: 24px;
+}
+
+/* SUBTEXTO */
+.muted {
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* CAMPOS */
+.field {
+  display: flex;
+  flex-direction: column;
+  color: #ccc;
+  font-size: 14px;
+}
+
+/* INPUT */
+input {
+  margin-top: 5px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+
+  background: #2a2a2a;
+  color: #fff;
+
+  transition: 0.2s;
+}
+
+input:focus {
+  background: #333;
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.5);
+}
+
+/* BOTÕES */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* BOTÃO PRINCIPAL */
+button {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+
+  background: linear-gradient(135deg, #e50914, #ff2a2a);
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+/* BOTÃO SECUNDÁRIO */
+button.secondary {
+  background: transparent;
+  border: 1px solid #444;
+  color: #ccc;
+}
+
+button.secondary:hover {
+  background: #222;
+}
+
+/* ERRO */
+.error {
+  margin-top: 10px;
+  color: #ff4d4d;
+  font-size: 14px;
+  text-align: center;
+}
+</style>

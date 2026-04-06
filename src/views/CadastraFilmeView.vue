@@ -39,6 +39,7 @@
         })
         */
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { onAuthStateChanged } from 'firebase/auth'
 
 
 // ---------------------------------------------------------------------------
@@ -82,7 +83,6 @@ const dataEstreia = ref('')
 
 let unsubscribe = null
 
-
 // ---------------------------------------------------------------------------
 // FUNÇÃO: salvarFilme — operação CREATE do CRUD
 // ---------------------------------------------------------------------------
@@ -103,6 +103,7 @@ const salvarFilme = async () => {
 
   // addDoc grava um novo documento na coleção "financas".
   // await pausa a função até o Firebase confirmar a gravação.
+  try {
   await addDoc(collection(db, 'financas'), {
     titulo: titulo.value,
     valor: Number(valor.value),  // Converte string → número antes de salvar
@@ -114,6 +115,12 @@ const salvarFilme = async () => {
     // Sem isso, todos os usuários veriam os cadastros uns dos outros.
     userId: auth.currentUser.uid
   })
+  } catch (error) {
+    console.error(error)
+    aviso.value = 'Erro ao cadastrar filme.'
+  }
+
+  
 
   // Limpa os campos após salvar com sucesso
   titulo.value = ''
@@ -121,6 +128,7 @@ const salvarFilme = async () => {
   imagem.value = ''
   genero.value = ''
   dataEstreia.value = ''
+  status.value = 'cartaz'
 }
 
 
@@ -194,15 +202,11 @@ const ouvirfilmes = () => {
 // listeners no banco de dados.
 onMounted(() => {
 
-  // Verifica se existe um usuário autenticado no sistema.
-  // auth.currentUser vem do Firebase Authentication.
-  if (auth.currentUser) {
-
-    // Inicia a escuta em tempo real das filmes do usuário.
-    // A função ouvirfilmes usa onSnapshot do Firestore
-    // para receber atualizações automáticas do banco.
-    ouvirfilmes()
-  }
+  onAuthStateChanged(auth, (user) => {
+    if (user && !unsubscribe) {
+      ouvirfilmes()
+    }
+  })
 })
 
 
@@ -230,75 +234,196 @@ onBeforeUnmount(() => {
 
 
 <template>
-  <section class="card">
+  <section>
 
-    <h1><i class="fa-solid fa-chart-line"></i> Cadastrar Filmes</h1>
-    <p class="muted">Somente usuarios logados podem acessar esta tela.</p>
+    <div class="container">
 
-    <!-- -----------------------------------------------------------------
-      FORMULÁRIO CADASTRO
-    ------------------------------------------------------------------ -->
-    <div class="form-row">
+      <!-- HEADER -->
+      <div class="header">
+        <h1>🎬 Cadastrar Filmes</h1>
+        <p>Adicione filmes ao catálogo</p>
+      </div>
 
-      <!-- v-model="titulo" mantém o campo sincronizado com a ref -->
-      <input v-model="titulo" placeholder="Título do filme" />
+      <!-- FORMULÁRIO -->
+      <div class="form-card">
+        <div class="form-row">
 
-      <!-- type="number" + step="0.01" permite valores decimais -->
-      <input v-model="valor" type="number" step="0.01" placeholder="Valor do ingresso" />
+          <input v-model="titulo" placeholder="Título do filme" />
 
-      <input v-model="imagem" placeholder="URL da imagem (capa)" />
+          <input v-model="valor" type="number" placeholder="Valor do ingresso" />
 
-      <input v-model="genero" placeholder="Gênero (ex: Ação, Comédia)" />
+          <input v-model="imagem" placeholder="URL da imagem" />
 
-      <input v-model="dataEstreia" type="date" />
+          <input v-model="genero" placeholder="Gênero" />
 
-      <select v-model="status">
-        <option value="cartaz">Em cartaz</option>
-        <option value="breve">Em breve</option>
-      </select>
+          <input v-model="dataEstreia" type="date" />
 
-      <!-- @click chama salvarFilme() a cada clique -->
-      <button @click="salvarFilme">
-        <i class="fa-solid fa-plus"></i> Cadastrar
-      </button>
+          <select v-model="status">
+            <option value="cartaz">Em cartaz</option>
+            <option value="breve">Em breve</option>
+          </select>
+
+          <button @click="salvarFilme">
+            ➕ Cadastrar
+          </button>
+
+        </div>
+
+        <p v-if="aviso" class="error">
+          {{ aviso }}
+        </p>
+      </div>
+
+      <!-- LISTA -->
+      <h3 class="lista-titulo">Filmes Cadastrados</h3>
+
+      <div class="grid" v-if="filmes.length">
+        <FilmeItem
+          v-for="item in filmes"
+          :key="item.id"
+          :item="item"
+          :mostrarExcluir="true"
+        />
+      </div>
+
+      <p v-else class="empty">
+        Nenhum filme cadastrado.
+      </p>
 
     </div>
 
-    <!-- Exibido apenas quando "aviso" tiver conteúdo (v-if) -->
-    <p v-if="aviso" class="error">
-      <i class="fa-solid fa-triangle-exclamation"></i> {{ aviso }}
-    </p>
-
-    <h3>Filmes Cadastrados</h3>
-
-    <!-- -----------------------------------------------------------------
-      LISTA DE FILMES
-      v-if / v-else alternam entre lista preenchida e mensagem vazia.
-    ------------------------------------------------------------------ -->
-
-    <!-- v-if: renderiza a lista somente se houver ao menos 1 item -->
-    <ul v-if="filmes.length">
-
-      <!--
-        v-for percorre o array "filmes".
-        :key="item.id" usa o ID do Firestore para identificar cada elemento
-        de forma única — o Vue precisa disso para atualizar o DOM com eficiência.
-      --> <!--
-      <li v-for="item in filmes" :key="item.id">
-        <strong>{{ item.titulo }}</strong> — R$ {{ item.valor }}
-      </li> -->
-
-      <!-- nova lista para receber o componente detalhe-->
-      <FilmeItem
-        v-for="item in filmes"
-        :key="item.id"
-        :item="item"
-      />
-
-    </ul>
-
-    <!-- v-else: exibido quando filmes.length === 0 -->
-    <p v-else class="muted">Ainda nao ha filmes cadastrados.</p>
-
   </section>
 </template>
+
+<style scoped>
+/* FUNDO */
+section {
+  background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
+  min-height: 100vh;
+  padding: 30px 20px;
+}
+
+/* CONTAINER CENTRAL */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* HEADER */
+.header {
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #fff;
+  font-size: 26px;
+  margin: 0;
+}
+
+.header p {
+  color: #aaa;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* LINHA ESTILO STREAMING */
+.header::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, #e50914, transparent);
+}
+
+/* CARD FORMULÁRIO (GLASS) */
+.form-card {
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 30px;
+}
+
+/* GRID DO FORM */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+/* INPUTS */
+input,
+select {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+
+  background: #2a2a2a;
+  color: #fff;
+  transition: 0.2s;
+}
+
+input:focus,
+select:focus {
+  background: #333;
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.5);
+}
+
+/* BOTÃO */
+button {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+
+  background: linear-gradient(135deg, #e50914, #ff2a2a);
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+.form-row button {
+  grid-column: 1 / -1; 
+  justify-self: center; 
+  max-width: 200px; 
+}
+/* ERRO */
+.error {
+  margin-top: 10px;
+  color: #ff4d4d;
+}
+
+/* TÍTULO LISTA */
+.lista-titulo {
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+/* GRID DOS FILMES */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* ESTADO VAZIO */
+.empty {
+  margin-top: 30px;
+  text-align: center;
+  color: #888;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 22px;
+  }
+}
+</style>
