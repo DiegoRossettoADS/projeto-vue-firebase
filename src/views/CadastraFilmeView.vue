@@ -38,7 +38,7 @@
           clearInterval(intervalo)
         })
         */
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { onAuthStateChanged } from 'firebase/auth'
 
 
@@ -99,6 +99,8 @@ const salvarFilme = async () => {
   if (!titulo.value || !valor.value || !status.value || !genero.value || !dataEstreia.value ) {
     aviso.value = 'Preencha as informações.'
     return
+
+    if (!validarData()) return
   }
 
   // addDoc grava um novo documento na coleção "financas".
@@ -184,6 +186,31 @@ const ouvirfilmes = () => {
   })
 }
 
+const dataMinima = new Date().toISOString().split('T')[0]
+
+watch(status, (novoStatus) => {
+  const hoje = new Date().toISOString().split('T')[0]
+
+  if (novoStatus === 'cartaz') {
+    dataEstreia.value = hoje
+  }
+
+  if (novoStatus === 'breve') {
+    dataEstreia.value = ''
+  }
+})
+
+const validarData = () => {
+  const hoje = new Date().toISOString().split('T')[0]
+
+  if (status.value === 'breve' && dataEstreia.value < hoje) {
+    aviso.value = 'Filmes em breve devem ter data futura.'
+    return false
+  }
+
+  return true
+}
+
 
 
 // ---------------------------------------------------------------------------
@@ -256,7 +283,11 @@ onBeforeUnmount(() => {
 
           <input v-model="genero" placeholder="Gênero" />
 
-          <input v-model="dataEstreia" type="date" />
+          <!--<input v-model="dataEstreia" type="date" />
+          <input v-model="dataEstreia" type="date" :min="dataMinima"/> -->
+
+          <label class="field">Data de estreia 
+          <input v-model="dataEstreia" type="date" :min="status === 'breve' ? dataMinima : null" /></label>
 
           <select v-model="status">
             <option value="cartaz">Em cartaz</option>
@@ -369,6 +400,24 @@ input:focus,
 select:focus {
   background: #333;
   box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.5);
+}
+
+input[type="date"] {
+  cursor: pointer;
+  color: #ccc;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: #aaa;
+  gap: 5px;
 }
 
 /* BOTÃO */
