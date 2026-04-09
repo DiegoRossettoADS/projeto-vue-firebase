@@ -296,7 +296,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* FUNDO */
 section {
   background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
   min-height: 100vh;
